@@ -19,7 +19,7 @@ runs:
         # Detect runner platform
         OS=$(echo "${{ runner.os }}" | tr '[:upper:]' '[:lower:]')
         ARCH=$( [[ "${{ runner.arch }}" == "ARM64" ]] && echo "aarch64" || echo "x86_64" )
-        PLATFORM="${OS}/${ARCH}"
+        PLATFORM="${OS}-${ARCH}"
 
         INSTALL_DIR=$HOME/.kwctl
         RELEASE_URL="download/${{ inputs.KWCTL_VERSION }}"
