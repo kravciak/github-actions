@@ -4,6 +4,7 @@ branding:
   icon: "package"
   color: "blue"
 inputs:
+  # latest | pre-release | v1.23.0-rc1
   KWCTL_VERSION:
     description: "kwctl release to be installed"
     required: false
@@ -21,11 +22,21 @@ runs:
         ARCH=$(echo "${{ runner.arch }}" | sed -E 's/X64/x86_64/; s/ARM64/aarch64/')
         ASSET="kwctl-${OS}-${ARCH}"
 
-        INSTALL_DIR=$HOME/.kwctl
-        RELEASE_URL="download/${{ inputs.KWCTL_VERSION }}"
-        [ "${{ inputs.KWCTL_VERSION }}" == "latest" ] && RELEASE_URL="latest/download"
+        # Build URL to download the release
+        case "${{ inputs.KWCTL_VERSION }}" in
+          "pre-release")
+            RELEASE_TAG=$(curl -s https://api.github.com/repos/kubewarden/kwctl/releases | jq -r '.[0].tag_name')
+            RELEASE_URL="download/$RELEASE_TAG"
+            ;;
+          "latest")
+            RELEASE_URL="latest/download";;
+          *)
+            RELEASE_URL="download/${{ inputs.KWCTL_VERSION }}";;
+        esac
 
+        INSTALL_DIR=$HOME/.kwctl
         mkdir -p $INSTALL_DIR
+
         curl -sL https://github.com/kubewarden/kwctl/releases/$RELEASE_URL/$ASSET.zip -o $INSTALL_DIR/$ASSET.zip
         unzip -o $INSTALL_DIR/$ASSET.zip -d $INSTALL_DIR
         rm $INSTALL_DIR/$ASSET.zip
